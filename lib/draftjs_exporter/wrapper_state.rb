@@ -68,10 +68,12 @@ module DraftjsExporter
       return reset_wrapper unless options.key?(:wrapper)
 
       new_options = [options[:wrapper][:element], options[:wrapper].fetch(:attrs, {})]
-
-      create_wrapper(new_options, should_nest: false) if new_options != wrapper_options
-
       depth = block[:depth]
+
+      if new_options != wrapper_options && depth == 0
+        create_wrapper(new_options, should_nest: false) 
+      end
+
       level_difference = depth - (@wrappers.length - 1)
 
       if level_difference > 0
