@@ -1,5 +1,3 @@
-require 'byebug'
-
 module DraftjsExporter
   class WrapperState
     def initialize(block_map)
