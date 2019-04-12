@@ -97,7 +97,15 @@ module DraftjsExporter
 
     def create_wrapper(options, should_nest: true)
       document.create_element(*options).tap do |new_element|
-        target_wrapper = should_nest ? wrapper_element : reset_wrapper;
+        if should_nest
+          target_wrapper = 
+            wrapper_element.children.length > 0 ?
+              wrapper_element.children.last :
+              wrapper_element
+        else 
+          target_wrapper = reset_wrapper
+        end
+
         target_wrapper.add_child(new_element)
         set_wrapper(new_element, options, should_nest: should_nest)
       end

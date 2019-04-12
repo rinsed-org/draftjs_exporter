@@ -444,12 +444,12 @@ RSpec.describe DraftjsExporter::HTML do
               depth: 3,
               inlineStyleRanges: [],
               entityRanges: []
-            },
+            }
           ]
         }
 
         expected_output = <<-OUTPUT.strip
-          <ul class=\"public-DraftStyleDefault-ul\">\n<li>\nitem1\n</li>\n<ul class=\"public-DraftStyleDefault-ul\">\n<li>\nitem2\n</li>\n<li>\nitem3\n</li>\n<ul class=\"public-DraftStyleDefault-ul\"><li>\nitem4\n</li></ul>\n</ul>\n<li>\nitem5\n</li>\n<ul class=\"public-DraftStyleDefault-ul\">\n<ul class=\"public-DraftStyleDefault-ul\"><li>\nitem6\n</li></ul>\n<li>\nitem7\n</li>\n<ul class=\"public-DraftStyleDefault-ul\"><ul class=\"public-DraftStyleDefault-ul\"><ul class=\"public-DraftStyleDefault-ul\"><ul class=\"public-DraftStyleDefault-ul\"><li>\nitem8\n</li></ul></ul></ul></ul>\n</ul>\n</ul><ol class=\"public-DraftStyleDefault-ol\">\n<li>\nitem9\n</li>\n<ul class=\"public-DraftStyleDefault-ul\"><ul class=\"public-DraftStyleDefault-ul\"><ul class=\"public-DraftStyleDefault-ul\"><li>\nitem10\n</li></ul></ul></ul>\n</ol>
+          <ul class=\"public-DraftStyleDefault-ul\">\n<li>\nitem1<ul class=\"public-DraftStyleDefault-ul\">\n<li>\nitem2\n</li>\n<li>\nitem3<ul class=\"public-DraftStyleDefault-ul\"><li>\nitem4\n</li></ul>\n</li>\n</ul>\n</li>\n<li>\nitem5<ul class=\"public-DraftStyleDefault-ul\">\n<ul class=\"public-DraftStyleDefault-ul\"><li>\nitem6\n</li></ul>\n<li>\nitem7<ul class=\"public-DraftStyleDefault-ul\"><ul class=\"public-DraftStyleDefault-ul\"><ul class=\"public-DraftStyleDefault-ul\"><ul class=\"public-DraftStyleDefault-ul\"><li>\nitem8\n</li></ul></ul></ul></ul>\n</li>\n</ul>\n</li>\n</ul><ol class=\"public-DraftStyleDefault-ol\"><li>\nitem9<ul class=\"public-DraftStyleDefault-ul\"><ul class=\"public-DraftStyleDefault-ul\"><ul class=\"public-DraftStyleDefault-ul\"><li>\nitem10\n</li></ul></ul></ul>\n</li></ol>
         OUTPUT
 
         expect(mapper.call(input)).to eq(expected_output)
