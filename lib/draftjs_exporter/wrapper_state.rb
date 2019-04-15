@@ -75,9 +75,7 @@ module DraftjsExporter
       level_difference = depth - (@wrappers.length - 1)
 
       if level_difference > 0
-        level_difference.times do 
-          create_wrapper(new_options, should_nest: true) 
-        end
+        create_wrapper(new_options, should_nest: true) 
       else
         @wrappers.pop(-level_difference)
       end   
