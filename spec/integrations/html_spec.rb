@@ -89,8 +89,8 @@ RSpec.describe DraftjsExporter::HTML do
               text: 'Name: Diana G',
               type: 'unstyled',
               depth: 0,
-              inlineStyleRanges: nil,
-              entityRanges: nil
+              inlineStyleRanges: [],
+              entityRanges: []
             },
             {
               key: '6udia',
@@ -444,12 +444,36 @@ RSpec.describe DraftjsExporter::HTML do
               depth: 3,
               inlineStyleRanges: [],
               entityRanges: []
-            }
+            },
+            {
+              key: "6a082",
+              text: "item11",
+              type: "unstyled",
+              depth: 0,
+              inlineStyleRanges: [],
+              entityRanges: []
+            },
+            {
+              key: '6a083',
+              text: 'item12',
+              type: 'ordered-list-item',
+              depth: 3,
+              inlineStyleRanges: [],
+              entityRanges: []
+            },
+            {
+              key: '6a084',
+              text: 'item13',
+              type: 'ordered-list-item',
+              depth: 0,
+              inlineStyleRanges: [],
+              entityRanges: []
+            },
           ]
         }
 
         expected_output = <<-OUTPUT.strip
-          <ul class=\"public-DraftStyleDefault-ul\">\n<li>\nitem1<ul class=\"public-DraftStyleDefault-ul\">\n<li>\nitem2\n</li>\n<li>\nitem3<ul class=\"public-DraftStyleDefault-ul\"><li>\nitem4\n</li></ul>\n</li>\n</ul>\n</li>\n<li>\nitem5<ul class=\"public-DraftStyleDefault-ul\">\n<li>\nitem6\n</li>\n<li>\nitem7<ul class=\"public-DraftStyleDefault-ul\"><li>\nitem8\n</li></ul>\n</li>\n</ul>\n</li>\n</ul><ol class=\"public-DraftStyleDefault-ol\"><li>\nitem9<ul class=\"public-DraftStyleDefault-ul\"><li>\nitem10\n</li></ul>\n</li></ol>
+          <ul class=\"public-DraftStyleDefault-ul\">\n<li>\nitem1<ul class=\"public-DraftStyleDefault-ul\">\n<li>\nitem2\n</li>\n<li>\nitem3<ul class=\"public-DraftStyleDefault-ul\"><li>\nitem4\n</li></ul>\n</li>\n</ul>\n</li>\n<li>\nitem5<ul class=\"public-DraftStyleDefault-ul\">\n<li>\nitem6\n</li>\n<li>\nitem7<ul class=\"public-DraftStyleDefault-ul\"><li>\nitem8\n</li></ul>\n</li>\n</ul>\n</li>\n</ul><ol class=\"public-DraftStyleDefault-ol\"><li>\nitem9<ul class=\"public-DraftStyleDefault-ul\"><li>\nitem10\n</li></ul>\n</li></ol><div>\nitem11\n</div><ol class=\"public-DraftStyleDefault-ol\">\n<li>\nitem12\n</li>\n<li>\nitem13\n</li>\n</ol>
         OUTPUT
 
         expect(mapper.call(input)).to eq(expected_output)

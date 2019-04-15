@@ -66,10 +66,10 @@ module DraftjsExporter
       return reset_wrapper unless options.key?(:wrapper)
 
       new_options = [options[:wrapper][:element], options[:wrapper].fetch(:attrs, {})]
-      depth = block[:depth]
+      depth = can_nest? ? block[:depth] : 0
 
       if new_options != wrapper_options && depth == 0
-        create_wrapper(new_options, should_nest: false) 
+        create_wrapper(new_options, should_nest: false)
       end
 
       level_difference = depth - (@wrappers.length - 1)
@@ -123,6 +123,10 @@ module DraftjsExporter
       return nil if block_export.nil?
 
       block_export[:options]
+    end
+
+    def can_nest?
+      wrapper_element != fragment
     end
   end
 end
