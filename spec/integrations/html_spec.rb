@@ -449,7 +449,7 @@ RSpec.describe DraftjsExporter::HTML do
         }
 
         expected_output = <<-OUTPUT.strip
-
+          <ul class=\"public-DraftStyleDefault-ul\">\n<li>\nitem1<ul class=\"public-DraftStyleDefault-ul\">\n<li>\nitem2\n</li>\n<li>\nitem3<ul class=\"public-DraftStyleDefault-ul\"><li>\nitem4\n</li></ul>\n</li>\n</ul>\n</li>\n<li>\nitem5<ul class=\"public-DraftStyleDefault-ul\">\n<li>\nitem6\n</li>\n<li>\nitem7<ul class=\"public-DraftStyleDefault-ul\"><li>\nitem8\n</li></ul>\n</li>\n</ul>\n</li>\n</ul><ol class=\"public-DraftStyleDefault-ol\"><li>\nitem9<ul class=\"public-DraftStyleDefault-ul\"><li>\nitem10\n</li></ul>\n</li></ol>
         OUTPUT
 
         expect(mapper.call(input)).to eq(expected_output)
