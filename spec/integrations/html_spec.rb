@@ -11,6 +11,13 @@ RSpec.describe DraftjsExporter::HTML do
       },
       block_map: {
         'header-one' => { element: 'h1' },
+        'ordered-list-item' => {
+          element: 'li',
+          wrapper: {
+            element: 'ol',
+            attrs: { class: 'public-DraftStyleDefault-ol' }
+          }
+        },
         'unordered-list-item' => {
           element: 'li',
           wrapper: {
@@ -82,8 +89,8 @@ RSpec.describe DraftjsExporter::HTML do
               text: 'Name: Diana G',
               type: 'unstyled',
               depth: 0,
-              inlineStyleRanges: nil,
-              entityRanges: nil
+              inlineStyleRanges: [],
+              entityRanges: []
             },
             {
               key: '6udia',
@@ -347,6 +354,126 @@ RSpec.describe DraftjsExporter::HTML do
 
         expected_output = <<-OUTPUT.strip
 <ul class="public-DraftStyleDefault-ul">\n<li>\nitem1\n</li>\n<li>\nitem2\n</li>\n</ul>
+        OUTPUT
+
+        expect(mapper.call(input)).to eq(expected_output)
+      end
+    end
+
+    context 'with nested blocks' do
+      it 'decodes the content_state to html' do
+        input = {
+          entityMap: {},
+          blocks: [
+            {
+              key: 'dem5p',
+              text: 'item1',
+              type: 'unordered-list-item',
+              depth: 0,
+              inlineStyleRanges: [],
+              entityRanges: []
+            },
+            {
+              key: 'dem6p',
+              text: 'item2',
+              type: 'unordered-list-item',
+              depth: 1,
+              inlineStyleRanges: [],
+              entityRanges: []
+            },
+            {
+              key: 'dem7p',
+              text: 'item3',
+              type: 'unordered-list-item',
+              depth: 1,
+              inlineStyleRanges: [],
+              entityRanges: []
+            },
+            {
+              key: 'dem8p',
+              text: 'item4',
+              type: 'unordered-list-item',
+              depth: 2,
+              inlineStyleRanges: [],
+              entityRanges: []
+            },
+            {
+              key: 'dem9p',
+              text: 'item5',
+              type: 'unordered-list-item',
+              depth: 0,
+              inlineStyleRanges: [],
+              entityRanges: []
+            },
+            {
+              key: 'dem0p',
+              text: 'item6',
+              type: 'unordered-list-item',
+              depth: 2,
+              inlineStyleRanges: [],
+              entityRanges: []
+            },
+            {
+              key: 'dem1p',
+              text: 'item7',
+              type: 'unordered-list-item',
+              depth: 1,
+              inlineStyleRanges: [],
+              entityRanges: []
+            },
+            {
+              key: 'dem2p',
+              text: 'item8',
+              type: 'unordered-list-item',
+              depth: 5,
+              inlineStyleRanges: [],
+              entityRanges: []
+            },
+            {
+              key: 'dem3p',
+              text: 'item9',
+              type: 'ordered-list-item',
+              depth: 0,
+              inlineStyleRanges: [],
+              entityRanges: []
+            },
+            {
+              key: 'dem4p',
+              text: 'item10',
+              type: 'unordered-list-item',
+              depth: 3,
+              inlineStyleRanges: [],
+              entityRanges: []
+            },
+            {
+              key: "6a082",
+              text: "item11",
+              type: "unstyled",
+              depth: 0,
+              inlineStyleRanges: [],
+              entityRanges: []
+            },
+            {
+              key: '6a083',
+              text: 'item12',
+              type: 'ordered-list-item',
+              depth: 3,
+              inlineStyleRanges: [],
+              entityRanges: []
+            },
+            {
+              key: '6a084',
+              text: 'item13',
+              type: 'ordered-list-item',
+              depth: 0,
+              inlineStyleRanges: [],
+              entityRanges: []
+            },
+          ]
+        }
+
+        expected_output = <<-OUTPUT.strip
+          <ul class=\"public-DraftStyleDefault-ul\">\n<li>\nitem1<ul class=\"public-DraftStyleDefault-ul\">\n<li>\nitem2\n</li>\n<li>\nitem3<ul class=\"public-DraftStyleDefault-ul\"><li>\nitem4\n</li></ul>\n</li>\n</ul>\n</li>\n<li>\nitem5<ul class=\"public-DraftStyleDefault-ul\">\n<li>\nitem6\n</li>\n<li>\nitem7<ul class=\"public-DraftStyleDefault-ul\"><li>\nitem8\n</li></ul>\n</li>\n</ul>\n</li>\n</ul><ol class=\"public-DraftStyleDefault-ol\"><li>\nitem9<ul class=\"public-DraftStyleDefault-ul\"><li>\nitem10\n</li></ul>\n</li></ol><div>\nitem11\n</div><ol class=\"public-DraftStyleDefault-ol\">\n<li>\nitem12\n</li>\n<li>\nitem13\n</li>\n</ol>
         OUTPUT
 
         expect(mapper.call(input)).to eq(expected_output)

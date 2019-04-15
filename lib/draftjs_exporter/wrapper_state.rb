@@ -5,6 +5,7 @@ module DraftjsExporter
       @document = Nokogiri::HTML::Document.new
       @document.encoding = 'UTF-8' # To not transform HTML entities
       @fragment = Nokogiri::HTML::DocumentFragment.new(document)
+      @wrappers = []
       reset_wrapper
     end
 
@@ -12,13 +13,13 @@ module DraftjsExporter
       type = block.fetch(:type, 'unstyled')
       unstyled_options = block_map['unstyled']
 
-      return create_element(block_map.fetch(type, unstyled_options)) if type != 'atomic'
+      return create_element(block, block_map.fetch(type, unstyled_options)) if type != 'atomic'
 
       atomic_block_options = find_atomic_block_options(block)
 
-      return create_element(unstyled_options) if atomic_block_options.nil?
+      return create_element(block, unstyled_options) if atomic_block_options.nil?
 
-      create_element(atomic_block_options)
+      create_element(block, atomic_block_options)
     end
 
     def to_s
@@ -33,38 +34,57 @@ module DraftjsExporter
 
     attr_reader :fragment, :document, :block_map, :wrapper
 
-    def set_wrapper(element, options = {})
-      @wrapper = [element, options]
+    def clear_wrappers
+      @wrappers = []
+    end
+
+    def set_wrapper(element, options = {}, should_nest: false)
+      @wrappers[
+        should_nest ? @wrappers.length : 0
+      ] = [element, options]
     end
 
     def wrapper_element
-      @wrapper[0] || fragment
+      @wrappers.last[0] || fragment
     end
 
     def wrapper_options
-      @wrapper[1]
+      @wrappers.last[1]
     end
 
-    def create_element(block_options)
+    def create_element(block, block_options)
       document.create_element(
         block_options[:element],
         block_options.fetch(:prefix, ''),
         block_options.fetch(:attrs, {})
       ).tap do |e|
-        parent_for(block_options).add_child(e)
+        parent_for(block, block_options).add_child(e)
       end
     end
 
-    def parent_for(options)
+    def parent_for(block, options)
       return reset_wrapper unless options.key?(:wrapper)
 
       new_options = [options[:wrapper][:element], options[:wrapper].fetch(:attrs, {})]
-      return wrapper_element if new_options == wrapper_options
+      depth = can_nest? ? block[:depth] : 0
 
-      create_wrapper(new_options)
+      if new_options != wrapper_options && depth == 0
+        create_wrapper(new_options, should_nest: false)
+      end
+
+      level_difference = depth - (@wrappers.length - 1)
+
+      if level_difference > 0
+        create_wrapper(new_options, should_nest: true) 
+      else
+        @wrappers.pop(-level_difference)
+      end   
+
+      wrapper_element
     end
 
     def reset_wrapper
+      clear_wrappers
       set_wrapper(fragment)
       wrapper_element
     end
@@ -73,10 +93,19 @@ module DraftjsExporter
       block_map.fetch('atomic', [])
     end
 
-    def create_wrapper(options)
+    def create_wrapper(options, should_nest: true)
       document.create_element(*options).tap do |new_element|
-        reset_wrapper.add_child(new_element)
-        set_wrapper(new_element, options)
+        if should_nest
+          target_wrapper = 
+            wrapper_element.children.length > 0 ?
+              wrapper_element.children.last :
+              wrapper_element
+        else 
+          target_wrapper = reset_wrapper
+        end
+
+        target_wrapper.add_child(new_element)
+        set_wrapper(new_element, options, should_nest: should_nest)
       end
     end
 
@@ -94,6 +123,10 @@ module DraftjsExporter
       return nil if block_export.nil?
 
       block_export[:options]
+    end
+
+    def can_nest?
+      wrapper_element != fragment
     end
   end
 end
