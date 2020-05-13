@@ -27,19 +27,7 @@ config = {
         attrs: { class: 'public-DraftStyleDefault-ul' }
       }
     },
-    'unstyled' => { element: 'div' },
-    # For atomic blocks, we match data to find the right block blocks.
-    # Unmatched atomic blocks will use the un-styled block options.
-    'atomic' => [
-      {
-        match_data: {
-          type: 'task',
-          checked: true,
-          title: 'hello'
-        },
-        options: { element: 'span' }
-      }
-    ]
+    'unstyled' => { element: 'div' }
   },
   style_map: {
     'ITALIC' => { fontStyle: 'italic' }

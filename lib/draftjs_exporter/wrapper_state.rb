@@ -13,13 +13,15 @@ module DraftjsExporter
       type = block.fetch(:type, 'unstyled')
       unstyled_options = block_map['unstyled']
 
-      return create_element(block, block_map.fetch(type, unstyled_options)) if type != 'atomic'
+      return create_element block, block_map.fetch(type, unstyled_options) unless type == 'atomic'
 
-      atomic_block_options = find_atomic_block_options(block)
-
-      return create_element(block, unstyled_options) if atomic_block_options.nil?
-
-      create_element(block, atomic_block_options)
+      if (klass = atomic_class(block[:data][:type]))
+        klass.create(document, block).tap do |e|
+          parent_for(block, {}).add_child e
+        end
+      else
+        create_element block, unstyled_options
+      end
     end
 
     def to_s
@@ -89,10 +91,6 @@ module DraftjsExporter
       wrapper_element
     end
 
-    def atomic_block_map
-      block_map.fetch('atomic', [])
-    end
-
     def create_wrapper(options, should_nest: true)
       document.create_element(*options).tap do |new_element|
         if should_nest
@@ -109,20 +107,14 @@ module DraftjsExporter
       end
     end
 
-    def find_atomic_block_options(block)
-      block_data = block.fetch(:data, {})
+    def atomic_class(name)
+      klass = "DraftjsExporter::Atomic::#{name.classify}"
 
-      block_export = atomic_block_map.find do |block|
-        data_to_match = block.fetch(:match_data, {})
-
-        data_to_match.all? do |key, value|
-          block_data[key] == value
-        end
+      begin
+        klass.constantize
+      rescue NameError
+        nil
       end
-
-      return nil if block_export.nil?
-
-      block_export[:options]
     end
 
     def can_nest?
