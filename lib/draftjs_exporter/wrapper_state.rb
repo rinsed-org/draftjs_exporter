@@ -2,12 +2,14 @@
 
 module DraftjsExporter
   class WrapperState
-    def initialize(block_map)
+    def initialize(block_map, blocks)
       @block_map = block_map
+      @blocks = blocks
+      @wrappers = []
       @document = Nokogiri::HTML::Document.new
       @document.encoding = 'UTF-8' # To not transform HTML entities
       @fragment = Nokogiri::HTML::DocumentFragment.new(document)
-      @wrappers = []
+
       reset_wrapper
     end
 
@@ -18,7 +20,7 @@ module DraftjsExporter
       return create_element block, block_map.fetch(type, unstyled_options) unless type == 'atomic'
 
       if (klass = atomic_class(block[:data][:type]))
-        klass.create(document, block).tap do |e|
+        klass.create(document, block, @blocks).tap do |e|
           parent_for(block, {}).add_child e
         end
       else

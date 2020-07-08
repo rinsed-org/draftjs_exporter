@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'nokogiri'
 require 'draftjs_exporter/wrapper_state'
 require 'draftjs_exporter/entity_state'
@@ -17,13 +18,16 @@ module DraftjsExporter
     end
 
     def call(content_state, options = {})
-      wrapper_state = WrapperState.new(block_map)
-      content_state.fetch(:blocks, []).each do |block|
+      blocks = content_state.fetch(:blocks, [])
+      wrapper_state = WrapperState.new(block_map, blocks)
+
+      blocks.each do |block|
         element = wrapper_state.element_for(block)
         entity_map = content_state.fetch(:entityMap, {})
         block_contents(element, block, entity_map)
       end
-      wrapper_state.to_html(options)
+
+      wrapper_state.to_html options
     end
 
     private
