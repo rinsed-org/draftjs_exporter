@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module DraftjsExporter
   class WrapperState
     def initialize(block_map)
@@ -67,20 +69,23 @@ module DraftjsExporter
     def parent_for(block, options)
       return reset_wrapper unless options.key?(:wrapper)
 
+      if options[:wrapper].is_a?(Class)
+        wrapper_class = options.delete(:wrapper)
+        options[:wrapper] = { element: wrapper_class }
+      end
+
       new_options = [options[:wrapper][:element], options[:wrapper].fetch(:attrs, {})]
       depth = can_nest? ? block[:depth] : 0
 
-      if new_options != wrapper_options && depth == 0
-        create_wrapper(new_options, should_nest: false)
-      end
+      create_wrapper(new_options, block, should_nest: false) if new_options != wrapper_options && depth.zero?
 
       level_difference = depth - (@wrappers.length - 1)
 
-      if level_difference > 0
-        create_wrapper(new_options, should_nest: true) 
+      if level_difference.positive?
+        create_wrapper(new_options, block, should_nest: true)
       else
         @wrappers.pop(-level_difference)
-      end   
+      end
 
       wrapper_element
     end
@@ -91,20 +96,26 @@ module DraftjsExporter
       wrapper_element
     end
 
-    def create_wrapper(options, should_nest: true)
-      document.create_element(*options).tap do |new_element|
-        if should_nest
-          target_wrapper = 
-            wrapper_element.children.length > 0 ?
-              wrapper_element.children.last :
-              wrapper_element
-        else 
-          target_wrapper = reset_wrapper
-        end
+    def create_wrapper(options, block, should_nest: true)
+      new_element = if options.first.is_a?(Class)
+                      wrapper = options.first
+                      wrapper.create(document, block)
+                    else
+                      document.create_element(*options)
+                    end
 
-        target_wrapper.add_child(new_element)
-        set_wrapper(new_element, options, should_nest: should_nest)
-      end
+      target_wrapper = if should_nest
+                         if !wrapper_element.children.empty?
+                           wrapper_element.children.last
+                         else
+                           wrapper_element
+                         end
+                       else
+                         reset_wrapper
+                       end
+
+      target_wrapper.add_child(new_element)
+      set_wrapper new_element, options, should_nest: should_nest
     end
 
     def atomic_class(name)
