@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 require 'simplecov'
 require 'codeclimate-test-reporter'
+require 'pry-byebug'
 
 SimpleCov.start do
   formatter SimpleCov::Formatter::MultiFormatter.new(
