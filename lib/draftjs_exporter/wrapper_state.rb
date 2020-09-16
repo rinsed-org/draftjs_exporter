@@ -79,12 +79,12 @@ module DraftjsExporter
       new_options = [options[:wrapper][:element], options[:wrapper].fetch(:attrs, {})]
       depth = can_nest? ? block[:depth] : 0
 
-      create_wrapper(new_options, block, should_nest: false) if new_options != wrapper_options && depth.zero?
+      create_wrapper(new_options, block, options.dig(:wrapper, :child_element), should_nest: false) if new_options != wrapper_options && depth.zero?
 
       level_difference = depth - (@wrappers.length - 1)
 
       if level_difference.positive?
-        create_wrapper(new_options, block, should_nest: true)
+        create_wrapper(new_options, block, options.dig(:wrapper, :child_element), should_nest: true)
       else
         @wrappers.pop(-level_difference)
       end
@@ -98,7 +98,7 @@ module DraftjsExporter
       wrapper_element
     end
 
-    def create_wrapper(options, block, should_nest: true)
+    def create_wrapper(options, block, child_tag, should_nest: true)
       new_element = if options.first.is_a?(Class)
                       wrapper = options.first
                       wrapper.create(document, block)
@@ -117,7 +117,14 @@ module DraftjsExporter
                        end
 
       target_wrapper.add_child(new_element)
-      set_wrapper new_element, options, should_nest: should_nest
+
+      if child_tag
+        child_element = document.create_element(child_tag)
+        new_element.add_child(child_element)
+        set_wrapper child_element, options, should_nest: should_nest
+      else
+        set_wrapper new_element, options, should_nest: should_nest
+      end
     end
 
     def atomic_class(name)

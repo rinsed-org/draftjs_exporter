@@ -25,6 +25,14 @@ RSpec.describe DraftjsExporter::HTML do
             attrs: { class: 'public-DraftStyleDefault-ul' }
           }
         },
+        'unordered-list-item-with-multiple-wrappers' => {
+          element: 'li',
+          wrapper: {
+            element: 'div',
+            child_element: 'ul',
+            attrs: { class: 'public-DraftStyleDefault-ul' }
+          }
+        },
         'unstyled' => { element: 'div' },
         'atomic' => [
           {
@@ -354,6 +362,38 @@ RSpec.describe DraftjsExporter::HTML do
 
         expected_output = <<-OUTPUT.strip
 <ul class="public-DraftStyleDefault-ul">\n<li>\nitem1\n</li>\n<li>\nitem2\n</li>\n</ul>
+        OUTPUT
+
+        expect(mapper.call(input)).to eq(expected_output)
+      end
+    end
+
+    context 'with multiple wrapping elements' do
+      it 'decodes the content_state to html' do
+        input = {
+          entityMap: {},
+          blocks: [
+            {
+              key: 'dem5p',
+              text: 'item1',
+              type: 'unordered-list-item-with-multiple-wrappers',
+              depth: 0,
+              inlineStyleRanges: [],
+              entityRanges: []
+            },
+            {
+              key: 'dem5p',
+              text: 'item2',
+              type: 'unordered-list-item-with-multiple-wrappers',
+              depth: 0,
+              inlineStyleRanges: [],
+              entityRanges: []
+            }
+          ]
+        }
+
+        expected_output = <<-OUTPUT.strip
+<div class="public-DraftStyleDefault-ul"><ul>\n<li>\nitem1\n</li>\n<li>\nitem2\n</li>\n</ul></div>
         OUTPUT
 
         expect(mapper.call(input)).to eq(expected_output)
