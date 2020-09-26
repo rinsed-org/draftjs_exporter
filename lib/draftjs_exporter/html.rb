@@ -19,11 +19,11 @@ module DraftjsExporter
 
     def call(content_state, options = {})
       blocks = content_state.fetch(:blocks, [])
-      wrapper_state = WrapperState.new(block_map, blocks)
+      entity_map = content_state.fetch(:entityMap, {})
+      wrapper_state = WrapperState.new(block_map, blocks, entity_map)
 
       blocks.each do |block|
         element = wrapper_state.element_for(block)
-        entity_map = content_state.fetch(:entityMap, {})
         block_contents(element, block, entity_map)
       end
 
@@ -35,7 +35,7 @@ module DraftjsExporter
     def block_contents(element, block, entity_map)
       style_state = StyleState.new(style_map, style_block_map)
       entity_state = EntityState.new(element, entity_decorators, entity_map)
-      build_command_groups(block).each do |text, commands|
+      build_command_groups(block, entity_map).each do |text, commands|
         commands.each do |command|
           entity_state.apply(command)
           style_state.apply(command)
@@ -70,14 +70,24 @@ module DraftjsExporter
       end
     end
 
-    def build_command_groups(block)
-      text = block.fetch(:text)
+    def build_command_groups(block, entity_map)
       grouped = build_commands(block).group_by(&:index).sort
       grouped.map.with_index { |(index, commands), command_index|
         start_index = index
         next_group = grouped[command_index + 1]
         stop_index = (next_group && next_group.first || 0) - 1
-        [text.slice(start_index..stop_index), commands]
+
+        text = block.fetch(:text).slice(start_index..stop_index)
+
+        entity_range = block.fetch(:entityRanges).detect{ |e| e.fetch(:offset) == start_index }
+        if entity_range
+          entity_key = entity_range.fetch(:key).to_s
+          entity = entity_map.fetch(entity_key.to_sym)
+          decorator = entity_decorators[entity.fetch(:type)]
+          text = decorator.render_text(entity.fetch(:data)) if decorator && decorator.respond_to?(:render_text)
+        end
+
+        [text, commands]
       }
     end
 
