@@ -81,8 +81,8 @@ module DraftjsExporter
 
         entity_range = block.fetch(:entityRanges).detect{ |e| e.fetch(:offset) == start_index }
         if entity_range
-          entity_key = entity_range.fetch(:key).to_s
-          entity = entity_map.fetch(entity_key.to_sym)
+          entity_key = entity_range.fetch(:key).to_s.to_sym
+          entity = entity_map.fetch(entity_key)
           decorator = entity_decorators[entity.fetch(:type)]
           text = decorator.render_text(entity.fetch(:data)) if decorator && decorator.respond_to?(:render_text)
         end
