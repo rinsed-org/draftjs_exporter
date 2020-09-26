@@ -2,6 +2,7 @@
 require 'spec_helper'
 require 'draftjs_exporter/html'
 require 'draftjs_exporter/entities/link'
+require 'draftjs_exporter/atomic/image'
 
 RSpec.describe DraftjsExporter::HTML do
   subject(:mapper) do
@@ -33,30 +34,7 @@ RSpec.describe DraftjsExporter::HTML do
             attrs: { class: 'public-DraftStyleDefault-ul' }
           }
         },
-        'unstyled' => { element: 'div' },
-        'atomic' => [
-          {
-            match_data: {
-              type: 'checklist',
-              checked: true
-            },
-            options: {
-              element: 'span',
-              attrs: { id: 'hello-world' }
-            }
-          },
-          {
-            match_data: {
-              type: 'story',
-              name: 'yvonne'
-            },
-            options: {
-              element: 'article',
-              attrs: { title: 'paradise' },
-              prefix: '( ) '
-            }
-          }
-        ]
+        'unstyled' => { element: 'div' }
       },
       style_map: {
         'ITALIC' => { fontStyle: 'italic' }
@@ -74,7 +52,16 @@ RSpec.describe DraftjsExporter::HTML do
     context 'with different blocks' do
       it 'decodes the content_state to html' do
         input = {
-          entityMap: {},
+          entityMap: {
+            '0': {
+              data: {
+                src: 'fake-image-url.com',
+                alignment: 'center'
+              },
+              type: 'IMAGE',
+              mutability: 'IMMUTABLE'
+            }
+          },
           blocks: [
             {
               key: '5s7g9',
@@ -102,42 +89,21 @@ RSpec.describe DraftjsExporter::HTML do
             },
             {
               key: '6udia',
-              text: 'Hello my beautiful children',
+              text: ' ',
               type: 'atomic',
               depth: 0,
               inlineStyleRanges: [],
-              entityRanges: [],
-              data: {
-                type: 'checklist',
-                checked: true
-              }
-            },
-            {
-              key: '7j1l',
-              text: 'Nice to meet me',
-              type: 'atomic',
-              depth: 0,
-              inlineStyleRanges: [],
-              entityRanges: [],
-              data: {
-                type: 'story',
-                name: 'yvonne'
-              }
-            },
-            {
-              key: 'jq89x',
-              text: 'Wishful thinking',
-              type: 'atomic',
-              depth: 0,
-              inlineStyleRanges: [],
-              entityRanges: [],
-              data: { type: 'task' }
-            },
+              entityRanges: [{
+                key: 0,
+                length: 1,
+                offset: 0,
+              }],
+            }
           ]
         }
 
         expected_output = <<-OUTPUT.strip
-<h1>\nHeader\n</h1><div>\nsome random stuff\n</div><div>\nName: Diana G\n</div><span id="hello-world">Hello my beautiful children</span><article title="paradise">( ) Nice to meet me</article><div>\nWishful thinking\n</div>
+<h1>\nHeader\n</h1><div>\nsome random stuff\n</div><div>\nName: Diana G\n</div><p align="center"><img src="fake-image-url.com"> </p>
         OUTPUT
 
         expect(mapper.call(input)).to eq(expected_output)
@@ -198,14 +164,14 @@ RSpec.describe DraftjsExporter::HTML do
       it 'decodes the content_state to html' do
         input = {
           entityMap: {
-            '0' => {
+            '0': {
               type: 'LINK',
               mutability: 'MUTABLE',
               data: {
                 url: 'http://example.com'
               }
             },
-            '1' => {
+            '1': {
               type: 'ALIEN',
               mutability: 'MUTABLE',
               data: {
@@ -256,7 +222,7 @@ RSpec.describe DraftjsExporter::HTML do
         it 'decodes the content_state to html' do
           input = {
             entityMap: {
-              :'0' => {
+              '0': {
                 type: 'LINK',
                 mutability: 'MUTABLE',
                 data: {
@@ -294,14 +260,14 @@ RSpec.describe DraftjsExporter::HTML do
       it 'throws an error if entities cross over' do
         input = {
           entityMap: {
-            '0' => {
+            '0': {
               type: 'LINK',
               mutability: 'MUTABLE',
               data: {
                 url: 'http://foo.example.com'
               }
             },
-            '1' => {
+            '1': {
               type: 'LINK',
               mutability: 'MUTABLE',
               data: {

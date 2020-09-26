@@ -1,10 +1,14 @@
 # frozen_string_literal: true
 
+require 'active_support/inflector'
+require 'draftjs_exporter/atomic/image'
+
 module DraftjsExporter
   class WrapperState
-    def initialize(block_map, blocks)
+    def initialize(block_map, blocks, entity_map)
       @block_map = block_map
       @blocks = blocks
+      @entity_map = entity_map
       @wrappers = []
       @document = Nokogiri::HTML::Document.new
       @document.encoding = 'UTF-8' # To not transform HTML entities
@@ -19,8 +23,13 @@ module DraftjsExporter
 
       return create_element block, block_map.fetch(type, unstyled_options) unless type == 'atomic'
 
-      if (klass = atomic_class(block[:data][:type]))
-        klass.create(document, block, @blocks).tap do |e|
+      entity_range = block.fetch(:entityRanges).first
+      entity_key = entity_range.fetch(:key).to_s.to_sym
+      entity = @entity_map.fetch(entity_key)
+      klass = atomic_class(entity.fetch(:type))
+
+      if (klass)
+        klass.create(document, block, @blocks, entity).tap do |e|
           parent_for(block, {}).add_child e
         end
       else
@@ -59,12 +68,18 @@ module DraftjsExporter
     end
 
     def create_element(block, block_options)
-      document.create_element(
-        block_options[:element],
-        block_options.fetch(:prefix, ''),
-        block_options.fetch(:attrs, {})
-      ).tap do |e|
-        parent_for(block, block_options).add_child(e)
+      element = block_options.fetch(:element)
+
+      if element.is_a?(Class)
+        element.new.call(parent_for(block, block_options), block.fetch(:data))
+      else
+        document.create_element(
+          element,
+          block_options.fetch(:prefix, ''),
+          block_options.fetch(:attrs, {})
+        ).tap do |e|
+          parent_for(block, block_options).add_child(e)
+        end
       end
     end
 
@@ -128,8 +143,7 @@ module DraftjsExporter
     end
 
     def atomic_class(name)
-      klass = "DraftjsExporter::Atomic::#{name.classify}"
-
+      klass = "DraftjsExporter::Atomic::#{name.downcase.classify}"
       begin
         klass.constantize
       rescue NameError
