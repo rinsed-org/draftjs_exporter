@@ -24,7 +24,7 @@ module DraftjsExporter
       return create_element block, block_map.fetch(type, unstyled_options) unless type == 'atomic'
 
       entity_range = block.fetch(:entityRanges).first
-      entity_key = entity_range.fetch(:key).to_s.sym
+      entity_key = entity_range.fetch(:key).to_s.to_sym
       entity = @entity_map.fetch(entity_key)
       klass = atomic_class(entity.fetch(:type))
 
