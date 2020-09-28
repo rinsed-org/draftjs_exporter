@@ -7,8 +7,26 @@ module DraftjsExporter
     class Image < Base
       def create
         @document.create_element('p', align: @data.fetch(:alignment, 'default')).tap do |el|
-          el.add_child(@document.create_element('img', src: @data.fetch(:src)))
+          if link
+            el.inner_html = <<~HTML
+              <a href="#{link}"><img src="#{src}"></a>
+            HTML
+          else
+            el.inner_html = <<~HTML
+              <img src="#{src}">
+            HTML
+          end
         end
+      end
+
+      private
+
+      def src
+        @data.fetch(:src)
+      end
+
+      def link
+        @data[:link]
       end
     end
   end
