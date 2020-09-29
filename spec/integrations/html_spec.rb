@@ -55,8 +55,17 @@ RSpec.describe DraftjsExporter::HTML do
           entityMap: {
             '0': {
               data: {
+                alignment: 'center',
                 src: 'fake-image-url.com',
-                alignment: 'center'
+              },
+              type: 'IMAGE',
+              mutability: 'IMMUTABLE'
+            },
+            '1': {
+              data: {
+                alignment: 'center',
+                link: 'https://www.fake-link.com',
+                src: 'link-image.com',
               },
               type: 'IMAGE',
               mutability: 'IMMUTABLE'
@@ -98,12 +107,23 @@ RSpec.describe DraftjsExporter::HTML do
                 length: 1,
                 offset: 0,
               }],
+            }, {
+              key: '51j43',
+              text: ' ',
+              type: 'atomic',
+              depth: 0,
+              inlineStyleRanges: [],
+              entityRanges: [{
+                key: 1,
+                length: 1,
+                offset: 0,
+              }],
             }
           ]
         }
 
         expected_output = <<-OUTPUT.strip
-<h1>\nHeader\n</h1><div>\nsome random stuff\n</div><div>\nName: Diana G\n</div><p align="center"><img src="fake-image-url.com"> </p>
+<h1>\nHeader\n</h1><div>\nsome random stuff\n</div><div>\nName: Diana G\n</div><p align="center"><img src="fake-image-url.com">\n </p><p align="center"><a href="https://www.fake-link.com"><img src="link-image.com"></a>\n </p>
         OUTPUT
 
         expect(mapper.call(input)).to eq(expected_output)
