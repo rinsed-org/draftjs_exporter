@@ -8,13 +8,14 @@ require 'draftjs_exporter/command'
 
 module DraftjsExporter
   class HTML
-    attr_reader :block_map, :style_map, :entity_decorators, :style_block_map
+    attr_reader :block_map, :style_map, :entity_decorators, :style_block_map, :variables
 
-    def initialize(block_map:, style_map:, entity_decorators:, style_block_map:)
+    def initialize(block_map:, style_map:, entity_decorators:, style_block_map:, variables:)
       @block_map = block_map
       @style_map = style_map
       @entity_decorators = entity_decorators
       @style_block_map = style_block_map
+      @variables = variables
     end
 
     def call(content_state, options = {})
@@ -84,7 +85,7 @@ module DraftjsExporter
           entity_key = entity_range.fetch(:key).to_s.to_sym
           entity = entity_map.fetch(entity_key)
           decorator = entity_decorators[entity.fetch(:type)]
-          text = decorator.render_text(entity.fetch(:data)) if decorator && decorator.respond_to?(:render_text)
+          text = decorator.render_text(entity.fetch(:data), variables) if decorator && decorator.respond_to?(:render_text)
         end
 
         [text, commands]
