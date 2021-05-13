@@ -8,20 +8,31 @@ require 'draftjs_exporter/command'
 
 module DraftjsExporter
   class HTML
-    attr_reader :block_map, :style_map, :entity_decorators, :style_block_map, :variables
+    attr_reader :block_map
+    attr_reader :default_target_url
+    attr_reader :entity_decorators
+    attr_reader :style_block_map
+    attr_reader :style_map
+    attr_reader :variables
 
-    def initialize(block_map:, style_map:, entity_decorators:, style_block_map:, variables:)
+    def initialize(block_map:,
+                   default_target_url:,
+                   entity_decorators:,
+                   style_block_map:,
+                   style_map:,
+                   variables:)
       @block_map = block_map
-      @style_map = style_map
+      @default_target_url = default_target_url
       @entity_decorators = entity_decorators
       @style_block_map = style_block_map
+      @style_map = style_map
       @variables = variables
     end
 
     def call(content_state, options = {})
       blocks = content_state.fetch(:blocks, [])
       entity_map = content_state.fetch(:entityMap, {})
-      wrapper_state = WrapperState.new(block_map, blocks, entity_map)
+      wrapper_state = WrapperState.new(block_map, blocks, entity_map, default_target_url)
 
       blocks.each do |block|
         element = wrapper_state.element_for(block)

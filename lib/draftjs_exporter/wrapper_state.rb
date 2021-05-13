@@ -5,10 +5,11 @@ require 'draftjs_exporter/atomic/image'
 
 module DraftjsExporter
   class WrapperState
-    def initialize(block_map, blocks, entity_map)
+    def initialize(block_map, blocks, entity_map, default_target_url)
       @block_map = block_map
       @blocks = blocks
       @entity_map = entity_map
+      @default_target_url = default_target_url
       @wrappers = []
       @document = Nokogiri::HTML::Document.new
       @document.encoding = 'UTF-8' # To not transform HTML entities
@@ -29,7 +30,7 @@ module DraftjsExporter
       klass = atomic_class(entity.fetch(:type))
 
       if (klass)
-        klass.create(document, block, @blocks, entity).tap do |e|
+        klass.create(document, block, @blocks, entity, default_target_url).tap do |e|
           parent_for(block, {}).add_child e
         end
       else
@@ -47,7 +48,11 @@ module DraftjsExporter
 
     private
 
-    attr_reader :fragment, :document, :block_map, :wrapper
+    attr_reader :block_map
+    attr_reader :default_target_url
+    attr_reader :document
+    attr_reader :fragment
+    attr_reader :wrapper
 
     def clear_wrappers
       @wrappers = []
