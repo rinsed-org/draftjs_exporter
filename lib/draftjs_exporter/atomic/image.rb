@@ -26,7 +26,7 @@ module DraftjsExporter
       end
 
       def link
-        @data[:link]
+        @data.fetch(:link, @default_target_url)
       end
     end
   end
